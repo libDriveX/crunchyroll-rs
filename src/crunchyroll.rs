@@ -7,22 +7,22 @@ enum_values! {
     #[allow(non_camel_case_types)]
     #[derive(Hash, Ord, PartialOrd)]
     pub enum Locale {
-        ar_ME = "ar-ME"
-        ar_SA = "ar-SA"
-        de_DE = "de-DE"
-        en_IN = "en-IN"
-        en_US = "en-US"
-        es_419 = "es-419"
-        es_ES = "es-ES"
-        es_LA = "es-LA"
-        fr_FR = "fr-FR"
-        hi_IN = "hi-IN"
-        it_IT = "it-IT"
-        ja_JP = "ja-JP"
-        pt_BR = "pt-BR"
-        pt_PT = "pt-PT"
-        ru_RU = "ru-RU"
-        zh_CN = "zh-CN"
+        ar_ME = "ar"
+        ar_SA = "ar"
+        de_DE = "de"
+        en_IN = "en"
+        en_US = "en"
+        es_419 = "es"
+        es_ES = "es"
+        es_LA = "es"
+        fr_FR = "fr"
+        hi_IN = "hi"
+        it_IT = "it"
+        ja_JP = "ja"
+        pt_BR = "pt"
+        pt_PT = "pt"
+        ru_RU = "ru"
+        zh_CN = "zh"
     }
 }
 
@@ -50,21 +50,21 @@ impl Locale {
 
     pub fn to_human_readable(&self) -> String {
         match self {
-            Locale::ar_ME => "Arabic",
-            Locale::ar_SA => "Arabic (Saudi Arabia)",
-            Locale::de_DE => "German",
-            Locale::en_IN => "English (India)",
-            Locale::en_US => "English (US)",
-            Locale::es_419 | Locale::es_LA => "Spanish (Latin America)",
-            Locale::es_ES => "Spanish (European)",
-            Locale::fr_FR => "French",
-            Locale::hi_IN => "Hindi",
-            Locale::it_IT => "Italian",
-            Locale::ja_JP => "Japanese",
-            Locale::pt_BR => "Portuguese (Brazil)",
-            Locale::pt_PT => "Portuguese (Europe)",
-            Locale::ru_RU => "Russian",
-            Locale::zh_CN => "Chinese (China)",
+            Locale::ar_ME => "[ToonsHub] Arabic",
+            Locale::ar_SA => "[ToonsHub] Arabic (Saudi Arabia)",
+            Locale::de_DE => "[ToonsHub] German",
+            Locale::en_IN => "[ToonsHub] English (India)",
+            Locale::en_US => "[ToonsHub] English (US)",
+            Locale::es_419 | Locale::es_LA => "[ToonsHub] Spanish (Latin America)",
+            Locale::es_ES => "[ToonsHub] Spanish (European)",
+            Locale::fr_FR => "[ToonsHub] French",
+            Locale::hi_IN => "[ToonsHub] Hindi",
+            Locale::it_IT => "[ToonsHub] Italian",
+            Locale::ja_JP => "[ToonsHub] Japanese",
+            Locale::pt_BR => "[ToonsHub] Portuguese (Brazil)",
+            Locale::pt_PT => "[ToonsHub] Portuguese (Europe)",
+            Locale::ru_RU => "[ToonsHub] Russian",
+            Locale::zh_CN => "[ToonsHub] Chinese (China)",
             Locale::Custom(custom) => custom.as_str(),
         }
         .to_string()
