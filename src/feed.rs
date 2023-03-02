@@ -98,6 +98,12 @@ pub enum HomeFeed {
     /// A feed containing a title with description and multiple series (ids) matching to title and
     /// description.
     SeriesFeed(SeriesFeed),
+    /// A feed containing ids to music videos. Use [`crate::MusicVideo::from_id`] to get usable
+    /// structs from it.
+    MusicVideoFeed(Vec<String>),
+    /// A feed containing ids to concerts. Use [`crate::Concert::from_id`] to get usable structs from
+    /// it.
+    ConcertFeed(Vec<String>),
     /// News feed. Use [`Crunchyroll::news_feed`] to get it.
     NewsFeed,
     /// Browse content. Use [`Crunchyroll::browse`] with the value of this field as argument. Do not
@@ -105,18 +111,21 @@ pub enum HomeFeed {
     /// confusing results.
     Browse(BrowseOptions),
     /// Results similar to a series. Get the series struct via [`SimilarFeed::similar_id`] and call
-    /// [`Series::similar`] with [`SimilarFeed::similar_options`] to get similar series.
+    /// [`Series::similar`] to get similar series.
     SimilarTo(SimilarFeed),
+    /// Crunchyroll may update their feed / add new items. This field catches everything which is
+    /// unknown / not implemented in the library.
+    Unknown(serde_json::Map<String, serde_json::Value>),
 }
 
 impl Default for HomeFeed {
     fn default() -> Self {
-        Self::CarouselFeed(vec![])
+        Self::Unknown(serde_json::Map::default())
     }
 }
 
 impl<'de> Deserialize<'de> for HomeFeed {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -202,15 +211,53 @@ impl<'de> Deserialize<'de> for HomeFeed {
                 serde_json::from_value(serde_json::to_value(as_map).map_err(map_serde_error)?)
                     .map_err(map_serde_error)?,
             )),
-            "curated_collection" => Ok(Self::SeriesFeed(
-                serde_json::from_value(serde_json::to_value(as_map).map_err(map_serde_error)?)
-                    .map_err(map_serde_error)?,
-            )),
+            "curated_collection" => {
+                let response_type = get_value("response_type")?
+                    .as_str()
+                    .ok_or_else(|| type_error("response_type", "string"))?
+                    .to_string();
+
+                match response_type.as_str() {
+                    "series" => Ok(Self::SeriesFeed(
+                        serde_json::from_value(
+                            serde_json::to_value(as_map).map_err(map_serde_error)?,
+                        )
+                        .map_err(map_serde_error)?,
+                    )),
+                    "music_concert" => {
+                        let ids: Vec<String> = get_value("ids")?
+                            .as_array()
+                            .ok_or_else(|| type_error("ids", "string list"))?
+                            .iter()
+                            .map(|v| v.to_string())
+                            .collect();
+                        Ok(Self::ConcertFeed(ids))
+                    }
+                    "music_video" => {
+                        let ids: Vec<String> = get_value("ids")?
+                            .as_array()
+                            .ok_or_else(|| type_error("ids", "string list"))?
+                            .iter()
+                            .map(|v| v.to_string())
+                            .collect();
+                        Ok(Self::MusicVideoFeed(ids))
+                    }
+                    #[cfg(feature = "__test_strict")]
+                    _ => Err(Error::custom(format!(
+                        "cannot parse home feed response type '{response_type}'"
+                    ))),
+                    #[cfg(not(feature = "__test_strict"))]
+                    _ => Ok(HomeFeed::Unknown(as_map)),
+                }
+            }
+            #[cfg(feature = "__test_strict")]
             _ => Err(Error::custom(format!(
                 "cannot parse home feed resource type '{}' ({})",
                 resource_type,
                 serde_json::to_value(&as_map).unwrap()
             ))),
+            #[cfg(not(feature = "__test_strict"))]
+            _ => Ok(HomeFeed::Unknown(as_map)),
         }
     }
 }

@@ -174,6 +174,7 @@ mod auth {
     /// Contains which fixes should be used to make the api more reliable as Crunchyroll does weird
     /// stuff / delivers incorrect results.
     #[derive(Clone, Debug)]
+    #[allow(unused)]
     pub(crate) struct ExecutorFixes {
         pub(crate) locale_name_parsing: bool,
         pub(crate) season_number: bool,
@@ -189,6 +190,7 @@ mod auth {
         pub(crate) config: Mutex<ExecutorConfig>,
         pub(crate) details: ExecutorDetails,
 
+        #[allow(unused)]
         pub(crate) fixes: ExecutorFixes,
     }
 
@@ -397,16 +399,6 @@ mod auth {
             self
         }
 
-        pub(crate) fn apply_media_query(self) -> ExecutorRequestBuilder {
-            let details = self.executor.details.clone();
-
-            self.query(&[
-                ("Signature".to_string(), details.signature),
-                ("Policy".to_string(), details.policy),
-                ("Key-Pair-Id".to_string(), details.key_pair_id),
-            ])
-        }
-
         pub(crate) fn apply_locale_query(self) -> ExecutorRequestBuilder {
             let locale = self.executor.details.locale.clone();
             self.query(&[("locale", locale)])
@@ -414,7 +406,7 @@ mod auth {
 
         pub(crate) fn apply_preferred_audio_locale_query(self) -> ExecutorRequestBuilder {
             if let Some(locale) = self.executor.details.preferred_audio_locale.clone() {
-                self.query(&[("preferred_audio_locale", locale)])
+                self.query(&[("preferred_audio_language", locale)])
             } else {
                 self
             }
@@ -507,10 +499,10 @@ mod auth {
 
         /// Set the audio language of media (like episodes) which should be returned when querying
         /// by any other method than the direct media id. For example, if the preferred audio locale
-        /// were set to [`Locale::en_US`], the seasons queried with [`Series::seasons`] would likely
-        /// have [`Locale::en_US`] as their audio locale. This might not always work on all endpoints
-        /// as Crunchyroll does Crunchyroll things (e.g. it seems to have no effect when changing the
-        /// locale and using [`Crunchyroll::query`]).
+        /// were set to [`Locale::en_US`], the seasons queried with [`crate::Series::seasons`] would
+        /// likely have [`Locale::en_US`] as their audio locale. This might not always work on all
+        /// endpoints as Crunchyroll does Crunchyroll things (e.g. it seems to have no effect when
+        /// changing the locale and using [`Crunchyroll::query`]).
         pub fn preferred_audio_locale(
             mut self,
             preferred_audio_locale: Locale,
@@ -522,18 +514,21 @@ mod auth {
         /// Set season and episode locales by parsing the season name and check if it contains
         /// any language name.
         /// Under special circumstances, this can slow down some methods as additional request must
-        /// be made. Currently, this applies to [`crate::Media<crate::Series>`]. Whenever a request
-        /// is made which returns [`crate::Media<crate::Series>`], internally
-        /// [`crate::Media<crate::Series>::seasons`] is called for every series.
-        /// See https://github.com/crunchy-labs/crunchyroll-rs/issues/3 for more information.
+        /// be made. Currently, this applies to [`crate::Series`]. Whenever a request
+        /// is made which returns [`crate::Series`], internally [`crate::Series::seasons`] is called
+        /// for every series.
+        /// See <https://github.com/crunchy-labs/crunchyroll-rs/issues/3> for more information.
         #[cfg(feature = "experimental-stabilizations")]
+        #[cfg_attr(docsrs, doc(cfg(feature = "experimental-stabilizations")))]
         pub fn stabilization_locales(mut self, enable: bool) -> CrunchyrollBuilder {
             self.fixes.locale_name_parsing = enable;
             self
         }
 
-        ///
+        /// Set the season number of seasons by parsing a string which is delivered via the api too
+        /// and looks to be more reliable than the actual integer season number Crunchyroll provides.
         #[cfg(feature = "experimental-stabilizations")]
+        #[cfg_attr(docsrs, doc(cfg(feature = "experimental-stabilizations")))]
         pub fn stabilization_season_number(mut self, enable: bool) -> CrunchyrollBuilder {
             self.fixes.season_number = enable;
             self

@@ -34,9 +34,6 @@
 //! You can request media like series, episodes, movies, ... with their corresponding function in
 //! the [`Crunchyroll`] struct. Use `Crunchyroll::*_from_id` to get them while `*` is the media type.
 //!
-//! Every media type has the parent struct [`Media`] which takes a generic that represents the type
-//! of the media. [`Media<Season>`] would represent a season for example.
-//!
 //! ```
 //! let series: Series = crunchy
 //!     // get the series with the id 'GY8VEQ95Y'
@@ -63,8 +60,8 @@
 //! ## Streaming
 //!
 //! This crate allows you to get the actual video streams behind episodes and movies. With
-//! [`Media<Episode>::streams`] and [`Media<Movie>::streams`] you get access to the streams. The
-//! returning struct [`media::VideoStream`] has all required information to access the streams.
+//! [`Episode::streams`] and [`Movie::streams`] you get access to the streams. The returning struct
+//! [`media::VideoStream`] has all required information to access the streams.
 //!
 //! ```
 //! let streams = episode
@@ -79,9 +76,8 @@
 //!
 //! The feature `hls-stream` and / or `dash-stream` must be activated to get streams. `hls-stream`
 //! is activated by default and should be used if you want to get the video + audio combined
-//! ([`VideoStream::hls_streaming_data`] / [`PlaybackStream::hls_streaming_data`]). `dash-stream`
-//! should be used if you want to get the audio and video streams separately
-//! ([`VideoStream::dash_streaming_data`] / [`PlaybackStream::dash_streaming_data`]).
+//! ([`media::VideoStream::hls_streaming_data`]). `dash-stream` should be used if you want to get
+//! the audio and video streams separately ([`media::VideoStream::dash_streaming_data`]).
 //!
 //! ```
 //! let streaming_data = streams
@@ -115,6 +111,8 @@
 //! that no fields were added or removed from an api response, otherwise the associated test will
 //! fail.
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 pub mod account;
 pub mod categories;
 pub mod common;
@@ -125,6 +123,7 @@ pub mod feed;
 pub mod list;
 pub mod media;
 #[cfg(feature = "parse")]
+#[cfg_attr(docsrs, doc(cfg(feature = "parse")))]
 pub mod parse;
 pub mod rating;
 pub mod search;
@@ -141,7 +140,9 @@ pub(crate) use internal::serde::EmptyJsonProxy;
 pub(crate) use macros::{enum_values, options};
 
 pub use crunchyroll::{Crunchyroll, Locale};
-pub use media::{Episode, MediaCollection, Movie, MovieListing, Season, Series};
+pub use media::{
+    Concert, Episode, MediaCollection, Movie, MovieListing, MusicVideo, Season, Series,
+};
 #[cfg(feature = "parse")]
 pub use parse::{parse_url, UrlType};
 

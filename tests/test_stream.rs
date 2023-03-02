@@ -1,14 +1,18 @@
 use crate::utils::Store;
 use crate::utils::SESSION;
-use crunchyroll_rs::media::{VariantData, VariantSegment, VideoStream};
+use crunchyroll_rs::media::{Media, Stream, VariantData, VariantSegment};
+use crunchyroll_rs::Episode;
 use rand::seq::SliceRandom;
 
 mod utils;
 
-static STREAM: Store<VideoStream> = Store::new(|| {
+static STREAM: Store<Stream> = Store::new(|| {
     Box::pin(async {
         let crunchy = SESSION.get().await?;
-        let stream = VideoStream::from_id(crunchy, "G4GFQP0WM".into()).await?;
+        let stream = Episode::from_id(crunchy, "GRDKJZ81Y")
+            .await?
+            .streams()
+            .await?;
         Ok(stream)
     })
 });
@@ -126,4 +130,9 @@ async fn process_dash_segments() {
                 .await
         );
     }
+}
+
+#[tokio::test]
+async fn stream_versions() {
+    assert_result!(STREAM.get().await.unwrap().versions().await)
 }
